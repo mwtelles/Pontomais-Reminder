@@ -41,11 +41,16 @@ function displayData(data) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid'], function(result) {
+    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid', 'saved_login', 'saved_password'], function(result) {
         if (result.pontomais_token) {
             showLoggedInState();
         } else {
             showLoginForm();
+            if (result.saved_login && result.saved_password) {
+                document.getElementById('login').value = result.saved_login;
+                document.getElementById('password').value = result.saved_password;
+                document.getElementById('rememberMe').checked = true;
+            }
         }
     });
 });
@@ -55,6 +60,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
 
     const login = document.getElementById('login').value;
     const password = document.getElementById('password').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
 
     fetch('https://api.pontomais.com.br/api/auth/sign_in', {
         method: 'POST',
@@ -66,11 +72,21 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     .then(response => response.json())
     .then(data => {
         if (data.token) {
-            chrome.storage.local.set({
+            const storageData = {
                 pontomais_token: data.token,
                 client_id: data.client_id,
                 uid: data.data.login
-            }, function() {
+            };
+
+            if (rememberMe) {
+                storageData.saved_login = login;
+                storageData.saved_password = password;
+            } else {
+                storageData.saved_login = '';
+                storageData.saved_password = '';
+            }
+
+            chrome.storage.local.set(storageData, function() {
                 fetch('https://api.pontomais.com.br/api/session', {
                     method: 'POST',
                     headers: {
@@ -113,7 +129,7 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
 });
 
 document.getElementById('logoutButton').addEventListener('click', function() {
-    chrome.storage.local.remove(['pontomais_token', 'client_id', 'uid', 'session_data'], function() {
+    chrome.storage.local.remove(['pontomais_token', 'client_id', 'uid', 'session_data', 'saved_login', 'saved_password'], function() {
         showLoginForm();
         document.getElementById('message').textContent = 'Você se desconectou com sucesso.';
         document.getElementById('message').classList.add('success');
