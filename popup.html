@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PontoMais Reminder</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>PontoMais Reminder</h1>
+    <div id="loginContainer">
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="login">Login:</label>
+          <input type="text" id="login" name="login" placeholder="Digite seu login">
+        </div>
+        <div class="input-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" placeholder="Digite sua senha">
+        </div>
+        <input type="submit" value="Login" class="btn">
+      </form>
+    </div>
+    <div id="loggedInContainer" style="display: none;">
+      <p id="welcomeMessage"></p>
+      <button id="logoutButton" class="btn">Logout</button>
+      <button id="fetchDataButton" class="btn">Buscar Dados</button>
+      <div id="dataContainer"></div>
+    </div>
+    <div id="message"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
