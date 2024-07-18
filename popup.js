@@ -56,8 +56,24 @@ function displayData(data) {
     sessionDataContainer.innerHTML = `<pre>${JSON.stringify(relevantData, null, 2)}</pre>`;
 
     document.getElementById('employeeName').textContent = relevantData.employee.name;
-    document.getElementById('employeeDetails').textContent = `${relevantData.employee.job_title}, ${relevantData.employee.department}`;
+    document.getElementById('employeeDetails').textContent = `${relevantData.employee.job_title.name}, ${relevantData.employee.department.name}`;
     document.getElementById('clientDetails').textContent = `${relevantData.client.name}, CNPJ: ${relevantData.client.cnpj}`;
+}
+
+// Função para carregar o estado inicial da popup
+function loadInitialState() {
+    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid', 'session_data', 'saved_login', 'saved_password'], function(result) {
+        if (result.pontomais_token) {
+            showLoggedInState(result.session_data);
+        } else {
+            showLoginForm();
+            if (result.saved_login && result.saved_password) {
+                document.getElementById('login').value = result.saved_login;
+                document.getElementById('password').value = result.saved_password;
+                document.getElementById('rememberMe').checked = true;
+            }
+        }
+    });
 }
 
 // Função para carregar o estado inicial da popup
