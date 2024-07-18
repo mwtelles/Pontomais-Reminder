@@ -44,7 +44,7 @@
       </section>
       <div id="content">
         <div id="workday" class="tab-content">
-          <!-- Conteúdo da Jornada de Trabalho -->
+          <button id="fetchJourneyDataButton" class="btn">Buscar Dados de Jornada</button>
           <div id="dataContainer"></div>
         </div>
         <div id="settings" class="tab-content" style="display: none;">
@@ -56,6 +56,9 @@
     </div>
     <div id="message"></div>
   </div>
+  <script src="libs/dayjs.min.js"></script>
+  <script src="libs/plugin/utc.js"></script>
+  <script src="libs/plugin/timezone.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

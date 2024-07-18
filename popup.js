@@ -224,3 +224,73 @@ function showLoginForm() {
     document.getElementById('loginContainer').style.display = 'block';
     document.getElementById('loggedInContainer').style.display = 'none';
 }
+
+document.getElementById('fetchJourneyDataButton').addEventListener('click', function() {
+    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid'], function(result) {
+        console.log('Dados de autenticação recuperados:', result);
+        if (result.pontomais_token && result.client_id && result.uid) {
+            // Carregar plugins do dayjs
+            dayjs.extend(dayjs_plugin_utc);
+            dayjs.extend(dayjs_plugin_timezone);
+
+            // Definir a data atual no fuso horário de Brasília/São Paulo
+            const currentDate = dayjs().tz("America/Sao_Paulo").format('YYYY-MM-DD');
+
+            // Montar a URL com os parâmetros de consulta
+            const url = new URL('https://api.pontomais.com.br/api/time_cards/work_days/current');
+            url.searchParams.append('start_date', currentDate);
+            url.searchParams.append('end_date', currentDate);
+            url.searchParams.append('attributes', 'time_cards');
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${result.pontomais_token}`,
+                    'Content-Type': 'application/json',
+                    'access-token': result.pontomais_token,
+                    'client': result.client_id,
+                    'uid': result.uid
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayWorkDayData(data.work_days[0].time_cards); // Exibe os dados de time_cards
+            })
+            .catch(error => {
+                console.error('Erro ao obter dados do dia de trabalho:', error);
+                document.getElementById('message').textContent = 'Erro ao obter dados do dia de trabalho.';
+                document.getElementById('message').classList.add('error');
+            });
+        } else {
+            document.getElementById('message').textContent = 'Token não encontrado. Faça login novamente.';
+            document.getElementById('message').classList.add('error');
+        }
+    });
+});
+
+function displayWorkDayData(timeCards) {
+    console.log('Dados dos cartões de ponto recebidos para exibição:', timeCards);
+
+    if (!timeCards || timeCards.length === 0) {
+        console.error('Nenhum cartão de ponto disponível.');
+        return;
+    }
+
+    const dataContainer = document.getElementById('dataContainer');
+    dataContainer.style.display = 'block';
+    dataContainer.innerHTML = `<pre>${JSON.stringify(timeCards, null, 2)}</pre>`;
+
+    timeCards.forEach(timeCard => {
+        const timeCardElement = document.createElement('div');
+        timeCardElement.classList.add('time-card');
+        timeCardElement.innerHTML = `
+            <p>ID: ${timeCard.id}</p>
+            <p>Data: ${timeCard.date}</p>
+            <p>Hora: ${timeCard.time}</p>
+            <p>Endereço: ${timeCard.address}</p>
+            <p>Tipo de Registro: ${timeCard.register_type.name}</p>
+            <p>Método: ${timeCard.software_method.name}</p>
+        `;
+        dataContainer.appendChild(timeCardElement);
+    });
+}
