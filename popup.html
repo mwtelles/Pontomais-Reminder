@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>PontoMais Reminder</title>
@@ -7,7 +7,6 @@
 </head>
 <body>
   <div class="container">
-    <h1>PontoMais Reminder</h1>
     <div id="loginContainer">
       <form id="loginForm">
         <div class="input-group">
@@ -20,17 +19,40 @@
         </div>
         <div class="input-group">
           <label>
-            <input type="checkbox" id="rememberMe"> Lembrar-me
+            <input type="checkbox" id="rememberMe" name="rememberMe"> Lembrar-me
           </label>
         </div>
         <input type="submit" value="Login" class="btn">
       </form>
     </div>
     <div id="loggedInContainer" style="display: none;">
-      <p id="welcomeMessage"></p>
-      <button id="logoutButton" class="btn">Logout</button>
-      <button id="fetchDataButton" class="btn">Buscar Dados</button>
-      <div id="dataContainer"></div>
+      <header>
+        <div id="userInfo">
+          <span id="employeeName"></span>
+        </div>
+        <div id="icons">
+          <button id="settingsButton" class="icon-btn">⚙️</button>
+          <button id="logoutButton" class="icon-btn">🚪</button>
+        </div>
+      </header>
+      <div>
+        <p id="employeeDetails"></p>
+        <p id="clientDetails"></p>
+      </div>
+      <section id="tabs">
+        <button class="tab-btn" data-tab="workday">Jornada de Trabalho</button>
+      </section>
+      <div id="content">
+        <div id="workday" class="tab-content">
+          <!-- Conteúdo da Jornada de Trabalho -->
+          <div id="dataContainer"></div>
+        </div>
+        <div id="settings" class="tab-content" style="display: none;">
+          <!-- Conteúdo da Configuração -->
+          <button id="fetchDataButton" class="btn">Buscar Dados de Sessão</button>
+          <div id="sessionDataContainer"></div>
+        </div>
+      </div>
     </div>
     <div id="message"></div>
   </div>

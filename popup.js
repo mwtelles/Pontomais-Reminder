@@ -1,49 +1,70 @@
+// Função para exibir os dados na UI
 function displayData(data) {
+    console.log('Dados recebidos para exibição:', data);
+
+    if (!data || !data.client || !data.employee || !data.user) {
+        console.error('Dados de sessão incompletos ou ausentes:', data);
+        return;
+    }
+
     const relevantData = {
         client: {
-            id: data.session.client.id,
-            name: data.session.client.name,
-            corporate_name: data.session.client.corporate_name,
-            email: data.session.client.email,
-            phone: data.session.client.phone,
-            cnpj: data.session.client.cnpj,
-            address: data.session.client.address,
-            status: data.session.client.status.name,
-            plan: data.session.client.plan.name,
-            employees_count: data.session.client.employees_count,
-            active_employees_limit: data.session.client.active_employees_limit,
-            field_occupation: data.session.client.field_occupation.name,
-            contact_name: data.session.client.contact_name,
-            contact_mobile_phone: data.session.client.contact_mobile_phone,
+            id: data.client.id,
+            name: data.client.name,
+            corporate_name: data.client.corporate_name,
+            email: data.client.email,
+            phone: data.client.phone,
+            cnpj: data.client.cnpj,
+            address: data.client.address,
+            status: data.client.status,
+            plan: data.client.plan,
+            employees_count: data.client.employees_count,
+            active_employees_limit: data.client.active_employees_limit,
+            field_occupation: data.client.field_occupation,
+            contact_name: data.client.contact_name,
+            contact_mobile_phone: data.client.contact_mobile_phone,
         },
         employee: {
-            id: data.session.employee.id,
-            name: data.session.employee.name,
-            email: data.session.employee.email,
-            job_title: data.session.employee.job_title.name,
-            department: data.session.employee.department.name,
-            team: data.session.employee.team.name,
-            time_balance: data.session.employee.time_balance,
-            admission_date: data.session.employee.admission_date,
-            work_status_time_card: data.session.employee.work_status_time_card,
+            id: data.employee.id,
+            name: data.employee.name,
+            email: data.employee.email,
+            job_title: data.employee.job_title,
+            department: data.employee.department,
+            team: data.employee.team,
+            time_balance: data.employee.time_balance,
+            admission_date: data.employee.admission_date,
+            work_status_time_card: data.employee.work_status_time_card,
         },
         user: {
-            id: data.session.user.id,
-            email: data.session.user.email,
-            sign_in_count: data.session.user.sign_in_count,
-            last_sign_in_at: data.session.user.last_sign_in_at,
+            id: data.user.id,
+            email: data.user.email,
+            sign_in_count: data.user.sign_in_count,
+            last_sign_in_at: data.user.last_sign_in_at,
         }
     };
 
+    // Salvar os dados relevantes no armazenamento local
+    chrome.storage.local.set({ session_data: relevantData });
+
+    // Atualizar a UI com os dados relevantes
     const dataContainer = document.getElementById('dataContainer');
     dataContainer.style.display = 'block';
     dataContainer.innerHTML = `<pre>${JSON.stringify(relevantData, null, 2)}</pre>`;
+
+    const sessionDataContainer = document.getElementById('sessionDataContainer');
+    sessionDataContainer.style.display = 'block';
+    sessionDataContainer.innerHTML = `<pre>${JSON.stringify(relevantData, null, 2)}</pre>`;
+
+    document.getElementById('employeeName').textContent = relevantData.employee.name;
+    document.getElementById('employeeDetails').textContent = `${relevantData.employee.job_title}, ${relevantData.employee.department}`;
+    document.getElementById('clientDetails').textContent = `${relevantData.client.name}, CNPJ: ${relevantData.client.cnpj}`;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid', 'saved_login', 'saved_password'], function(result) {
+// Função para carregar o estado inicial da popup
+function loadInitialState() {
+    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid', 'session_data', 'saved_login', 'saved_password'], function(result) {
         if (result.pontomais_token) {
-            showLoggedInState();
+            showLoggedInState(result.session_data);
         } else {
             showLoginForm();
             if (result.saved_login && result.saved_password) {
@@ -53,122 +74,150 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-});
+}
 
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+// Evento DOMContentLoaded para carregar o estado inicial
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Carregando estado inicial...');
+    loadInitialState();
 
-    const login = document.getElementById('login').value;
-    const password = document.getElementById('password').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
 
-    fetch('https://api.pontomais.com.br/api/auth/sign_in', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ login, password })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.token) {
-            const storageData = {
-                pontomais_token: data.token,
-                client_id: data.client_id,
-                uid: data.data.login
-            };
+        const login = document.getElementById('login').value;
+        const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('rememberMe').checked;
 
-            if (rememberMe) {
-                storageData.saved_login = login;
-                storageData.saved_password = password;
-            } else {
-                storageData.saved_login = '';
-                storageData.saved_password = '';
-            }
+        fetch('https://api.pontomais.com.br/api/auth/sign_in', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ login, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Resposta do login:', data);
+            if (data.token) {
+                const storageData = {
+                    pontomais_token: data.token,
+                    client_id: data.client_id,
+                    uid: data.data.login
+                };
 
-            chrome.storage.local.set(storageData, function() {
-                fetch('https://api.pontomais.com.br/api/session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${data.token}`,
-                        'access-token': data.token,
-                        'client': data.client_id,
-                        'uid': data.data.login
-                    },
-                    body: JSON.stringify({
-                        session: {
-                            client_id: data.client_id
+                if (rememberMe) {
+                    storageData.saved_login = login;
+                    storageData.saved_password = password;
+                } else {
+                    storageData.saved_login = '';
+                    storageData.saved_password = '';
+                }
+
+                chrome.storage.local.set(storageData, function() {
+                    fetch('https://api.pontomais.com.br/api/session', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${data.token}`,
+                            'access-token': data.token,
+                            'client': data.client_id,
+                            'uid': data.data.login
                         }
                     })
+                    .then(response => response.json())
+                    .then(sessionData => {
+                        console.log('Dados da sessão obtidos:', sessionData);
+                        chrome.storage.local.set({ session_data: sessionData }, function() {
+                            showLoggedInState(sessionData);
+                            document.getElementById('message').textContent = 'Login realizado com sucesso!';
+                            document.getElementById('message').classList.add('success');
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erro ao obter dados da sessão:', error);
+                        document.getElementById('message').textContent = 'Erro ao obter dados da sessão.';
+                        document.getElementById('message').classList.add('error');
+                    });
+                });
+            } else {
+                document.getElementById('message').textContent = 'Falha no login. Verifique suas credenciais.';
+                document.getElementById('message').classList.add('error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            document.getElementById('message').textContent = 'Erro ao realizar login.';
+            document.getElementById('message').classList.add('error');
+        });
+    });
+
+    document.getElementById('logoutButton').addEventListener('click', function() {
+        chrome.storage.local.remove(['pontomais_token', 'client_id', 'uid', 'session_data', 'saved_login', 'saved_password'], function() {
+            showLoginForm();
+            document.getElementById('message').textContent = 'Você se desconectou com sucesso.';
+            document.getElementById('message').classList.add('success');
+        });
+    });
+
+    document.getElementById('fetchDataButton').addEventListener('click', function() {
+        chrome.storage.local.get(['pontomais_token', 'client_id', 'uid'], function(result) {
+            console.log('Dados de autenticação recuperados:', result);
+            if (result.pontomais_token && result.client_id && result.uid) {
+                fetch('https://api.pontomais.com.br/api/session', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${result.pontomais_token}`,
+                        'Content-Type': 'application/json',
+                        'access-token': result.pontomais_token,
+                        'client': result.client_id,
+                        'uid': result.uid
+                    }
                 })
                 .then(response => response.json())
-                .then(sessionData => {
-                    chrome.storage.local.set({ session_data: sessionData }, function() {
-                        showLoggedInState();
-                        document.getElementById('message').textContent = 'Login realizado com sucesso!';
-                        document.getElementById('message').classList.add('success');
-                    });
+                .then(data => {
+                    displayData(data);
                 })
                 .catch(error => {
                     console.error('Erro ao obter dados da sessão:', error);
                     document.getElementById('message').textContent = 'Erro ao obter dados da sessão.';
                     document.getElementById('message').classList.add('error');
                 });
-            });
-        } else {
-            document.getElementById('message').textContent = 'Falha no login. Verifique suas credenciais.';
-            document.getElementById('message').classList.add('error');
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        document.getElementById('message').textContent = 'Erro ao realizar login.';
-        document.getElementById('message').classList.add('error');
-    });
-});
-
-document.getElementById('logoutButton').addEventListener('click', function() {
-    chrome.storage.local.remove(['pontomais_token', 'client_id', 'uid', 'session_data', 'saved_login', 'saved_password'], function() {
-        showLoginForm();
-        document.getElementById('message').textContent = 'Você se desconectou com sucesso.';
-        document.getElementById('message').classList.add('success');
-    });
-});
-
-document.getElementById('fetchDataButton').addEventListener('click', function() {
-    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid'], function(result) {
-        if (result.pontomais_token && result.client_id && result.uid) {
-            fetch('https://api.pontomais.com.br/api/session', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${result.pontomais_token}`,
-                    'Content-Type': 'application/json',
-                    'access-token': result.pontomais_token,
-                    'client': result.client_id,
-                    'uid': result.uid
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                displayData(data);
-            })
-            .catch(error => {
-                console.error('Erro ao obter dados da sessão:', error);
-                document.getElementById('message').textContent = 'Erro ao obter dados da sessão.';
+            } else {
+                document.getElementById('message').textContent = 'Token não encontrado. Faça login novamente.';
                 document.getElementById('message').classList.add('error');
-            });
-        } else {
-            document.getElementById('message').textContent = 'Token não encontrado. Faça login novamente.';
-            document.getElementById('message').classList.add('error');
-        }
+            }
+        });
+    });
+
+    document.getElementById('settingsButton').addEventListener('click', function() {
+        showTab('settings');
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            showTab(tab);
+        });
     });
 });
 
-function showLoggedInState() {
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    document.getElementById(tab).style.display = 'block';
+}
+
+function showLoggedInState(sessionData) {
+    console.log('Exibindo estado logado com dados da sessão:', sessionData);
+
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('loggedInContainer').style.display = 'block';
-    document.getElementById('welcomeMessage').textContent = 'Você está logado!';
+    if (sessionData) {
+        displayData(sessionData);
+    } else {
+        document.getElementById('fetchDataButton').click();
+    }
 }
 
 function showLoginForm() {
