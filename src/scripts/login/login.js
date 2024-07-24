@@ -1,7 +1,8 @@
 import { showLoggedInState, showLoginForm, showMessage } from '../common/display.js';
-import { saveLoginData, getLoginData } from '../common/storage.js';
+import { saveLoginData } from '../common/storage.js';
 import { fetchAuthToken } from '../services/signInService.js';
 import { fetchSessionData } from '../services/sessionService.js';
+import { fetchJourneyData } from '../services/journeyService.js';
 
 export async function handleLogin(event) {
     event.preventDefault();
@@ -12,8 +13,12 @@ export async function handleLogin(event) {
     try {
         const authData = await fetchAuthToken(login, password);
         await saveLoginData(authData, rememberMe, login, password);
-        const sessionData = await fetchSessionData(authData.token, authData.client_id, authData.data.login);
+        const sessionData = await fetchSessionData();
         showLoggedInState(sessionData);
+
+        const timeCards = await fetchJourneyData();
+        displayWorkDayData(timeCards);
+
         showMessage('Login realizado com sucesso!', 'success');
     } catch (error) {
         showMessage('Erro ao realizar login.', 'error');

@@ -1,44 +1,46 @@
 export function displayData(data) {
     console.log('Dados recebidos para exibição:', data);
 
-    if (!data || !data.client || !data.employee || !data.user) {
+    if (!data || !data.session.client || !data.session.employee || !data.session.user) {
         console.error('Dados de sessão incompletos ou ausentes:', data);
         return;
     }
 
     const relevantData = {
         client: {
-            id: data.client.id,
-            name: data.client.name,
-            corporate_name: data.client.corporate_name,
-            email: data.client.email,
-            phone: data.client.phone,
-            cnpj: data.client.cnpj,
-            address: data.client.address,
-            status: data.client.status,
-            plan: data.client.plan,
-            employees_count: data.client.employees_count,
-            active_employees_limit: data.client.active_employees_limit,
-            field_occupation: data.client.field_occupation,
-            contact_name: data.client.contact_name,
-            contact_mobile_phone: data.client.contact_mobile_phone,
+            id: data.session.client.id,
+            name: data.session.client.name,
+            corporate_name: data.session.client.corporate_name,
+            email: data.session.client.email,
+            phone: data.session.client.phone,
+            cnpj: data.session.client.cnpj,
+            address: data.session.client.address,
+            status: data.session.client.status,
+            plan: data.session.client.plan,
+            employees_count: data.session.client.employees_count,
+            active_employees_limit: data.session.client.active_employees_limit,
+            field_occupation: data.session.client.field_occupation,
+            contact_name: data.session.client.contact_name,
+            contact_mobile_phone: data.session.client.contact_mobile_phone,
         },
         employee: {
-            id: data.employee.id,
-            name: data.employee.name,
-            email: data.employee.email,
-            job_title: data.employee.job_title,
-            department: data.employee.department,
-            team: data.employee.team,
-            time_balance: data.employee.time_balance,
-            admission_date: data.employee.admission_date,
-            work_status_time_card: data.employee.work_status_time_card,
+            id: data.session.employee.id,
+            name: data.session.employee.name,
+            first_name: data.session.employee.first_name,
+            email: data.session.employee.email,
+            job_title: data.session.employee.job_title,
+            department: data.session.employee.department,
+            team: data.session.employee.team,
+            time_balance: data.session.employee.time_balance,
+            admission_date: data.session.employee.admission_date,
+            work_status_time_card: data.session.employee.work_status_time_card,
+            picture: data.session.employee.picture ? data.session.employee.picture.url : ''
         },
         user: {
-            id: data.user.id,
-            email: data.user.email,
-            sign_in_count: data.user.sign_in_count,
-            last_sign_in_at: data.user.last_sign_in_at,
+            id: data.session.user.id,
+            email: data.session.user.email,
+            sign_in_count: data.session.user.sign_in_count,
+            last_sign_in_at: data.session.user.last_sign_in_at,
         }
     };
 
@@ -47,6 +49,11 @@ export function displayData(data) {
     document.getElementById('employeeName').textContent = relevantData.employee.name;
     document.getElementById('employeeDetails').textContent = `${relevantData.employee.job_title.name}, ${relevantData.employee.department.name}`;
     document.getElementById('clientDetails').textContent = `${relevantData.client.name}, CNPJ: ${relevantData.client.cnpj}`;
+    if (relevantData.employee.picture) {
+        const employeePicture = document.getElementById('employeePicture');
+        employeePicture.src = `https:${relevantData.employee.picture}`;
+        employeePicture.style.display = 'block';
+    }
 }
 
 export function displayWorkDayData(timeCards) {

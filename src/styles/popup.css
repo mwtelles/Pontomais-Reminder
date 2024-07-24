@@ -88,6 +88,8 @@ header {
 
 #userInfo {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 #employeeName {
@@ -144,4 +146,11 @@ section#tabs {
   border-radius: 4px;
   background-color: #f1f1f1;
   margin-top: 10px;
+}
+
+.employee-picture {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
 }
