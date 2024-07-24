@@ -1,7 +1,16 @@
-export async function fetchJourneyData(token, client_id, uid) {
+export async function fetchJourneyData() {
+    const tokenData = await new Promise((resolve, reject) => {
+        chrome.storage.local.get(['pontomais_token', 'client_id', 'uid'], function(result) {
+            if (chrome.runtime.lastError) {
+                return reject(chrome.runtime.lastError);
+            }
+            resolve(result);
+        });
+    });
+
+    const { pontomais_token, client_id, uid } = tokenData;
     dayjs.extend(dayjs_plugin_utc);
     dayjs.extend(dayjs_plugin_timezone);
-
     const currentDate = dayjs().tz("America/Sao_Paulo").format('YYYY-MM-DD');
     const url = new URL('https://api.pontomais.com.br/api/time_cards/work_days/current');
     url.searchParams.append('start_date', currentDate);
@@ -11,9 +20,9 @@ export async function fetchJourneyData(token, client_id, uid) {
     const response = await fetch(url, {
         method: 'GET',
         headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${pontomais_token}`,
             'Content-Type': 'application/json',
-            'access-token': token,
+            'access-token': pontomais_token,
             'client': client_id,
             'uid': uid
         }
@@ -23,5 +32,10 @@ export async function fetchJourneyData(token, client_id, uid) {
         throw new Error('Erro ao obter dados do dia de trabalho');
     }
 
-    return response.json().then(data => data.work_days[0].time_cards);
+    const data = await response.json();
+    const timeCards = data.work_days[0].time_cards;
+
+    chrome.storage.local.set({ journey_data: timeCards });
+
+    return timeCards;
 }

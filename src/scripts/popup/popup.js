@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const timeCards = await fetchJourneyData();
         displayWorkDayData(timeCards);
     } catch (error) {
-        showMessage('Erro ao obter dados da jornada.', 'error');
+        showMessage('Erro ao obter dados do dia de trabalho.', 'error');
     }
 
     document.getElementById('settingsButton').addEventListener('click', () => {

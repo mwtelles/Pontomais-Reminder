@@ -44,14 +44,6 @@ export function displayData(data) {
 
     chrome.storage.local.set({ session_data: relevantData });
 
-    const dataContainer = document.getElementById('dataContainer');
-    dataContainer.style.display = 'block';
-    dataContainer.innerHTML = `<pre>${JSON.stringify(relevantData, null, 2)}</pre>`;
-
-    const sessionDataContainer = document.getElementById('sessionDataContainer');
-    sessionDataContainer.style.display = 'block';
-    sessionDataContainer.innerHTML = `<pre>${JSON.stringify(relevantData, null, 2)}</pre>`;
-
     document.getElementById('employeeName').textContent = relevantData.employee.name;
     document.getElementById('employeeDetails').textContent = `${relevantData.employee.job_title.name}, ${relevantData.employee.department.name}`;
     document.getElementById('clientDetails').textContent = `${relevantData.client.name}, CNPJ: ${relevantData.client.cnpj}`;
@@ -67,18 +59,17 @@ export function displayWorkDayData(timeCards) {
 
     const dataContainer = document.getElementById('dataContainer');
     dataContainer.style.display = 'block';
-    dataContainer.innerHTML = `<pre>${JSON.stringify(timeCards, null, 2)}</pre>`;
+    dataContainer.innerHTML = '';
 
     timeCards.forEach(timeCard => {
         const timeCardElement = document.createElement('div');
         timeCardElement.classList.add('time-card');
         timeCardElement.innerHTML = `
-            <p>ID: ${timeCard.id}</p>
-            <p>Data: ${timeCard.date}</p>
-            <p>Hora: ${timeCard.time}</p>
-            <p>Endereço: ${timeCard.address}</p>
-            <p>Tipo de Registro: ${timeCard.register_type.name}</p>
-            <p>Método: ${timeCard.software_method.name}</p>
+            <p><strong>Data:</strong> ${timeCard.date}</p>
+            <p><strong>Hora:</strong> ${timeCard.time}</p>
+            <p><strong>Endereço:</strong> ${timeCard.address}</p>
+            <p><strong>Tipo de Registro:</strong> ${timeCard.register_type.name}</p>
+            <p><strong>Método:</strong> ${timeCard.software_method.name}</p>
         `;
         dataContainer.appendChild(timeCardElement);
     });
@@ -95,6 +86,14 @@ export function showLoggedInState(sessionData) {
     } else {
         console.error('sessionData está ausente:', sessionData);
     }
+
+    chrome.storage.local.get(['journey_data'], function(result) {
+        if (result.journey_data) {
+            displayWorkDayData(result.journey_data);
+        } else {
+            console.error('Dados da jornada estão ausentes:', result);
+        }
+    });
 }
 
 export function showLoginForm() {
