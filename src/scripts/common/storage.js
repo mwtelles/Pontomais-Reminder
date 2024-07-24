@@ -1,9 +1,15 @@
 import { showLoggedInState, showLoginForm } from './display.js';
 
 export function loadInitialState() {
-    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid', 'session_data', 'saved_login', 'saved_password'], function(result) {
+    chrome.storage.local.get(['pontomais_token', 'client_id', 'uid', 'saved_login', 'saved_password'], async function(result) {
         if (result.pontomais_token) {
-            showLoggedInState(result.session_data);
+            try {
+                const sessionData = await fetchSessionData();
+                showLoggedInState(sessionData);
+            } catch (error) {
+                console.error('Erro ao obter dados da sessão:', error);
+                showLoginForm();
+            }
         } else {
             showLoginForm();
             if (result.saved_login && result.saved_password) {

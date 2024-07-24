@@ -35,7 +35,5 @@ export async function fetchJourneyData() {
     const data = await response.json();
     const timeCards = data.work_days[0].time_cards;
 
-    chrome.storage.local.set({ journey_data: timeCards });
-
     return timeCards;
 }

@@ -14,11 +14,8 @@ export async function handleLogin(event) {
         const authData = await fetchAuthToken(login, password);
         await saveLoginData(authData, rememberMe, login, password);
         const sessionData = await fetchSessionData();
-        showLoggedInState(sessionData);
-
-        const timeCards = await fetchJourneyData();
-        displayWorkDayData(timeCards);
-
+        const JourneyData = await fetchJourneyData();
+        showLoggedInState(sessionData, JourneyData);
         showMessage('Login realizado com sucesso!', 'success');
     } catch (error) {
         showMessage('Erro ao realizar login.', 'error');
@@ -26,7 +23,7 @@ export async function handleLogin(event) {
 }
 
 export function handleLogout() {
-    chrome.storage.local.remove(['pontomais_token', 'client_id', 'uid', 'session_data', 'saved_login', 'saved_password'], function() {
+    chrome.storage.local.remove(['pontomais_token', 'client_id', 'uid', 'saved_login', 'saved_password'], function() {
         showLoginForm();
         showMessage('Você se desconectou com sucesso.', 'success');
     });
