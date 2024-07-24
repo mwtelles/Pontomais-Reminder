@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>PontoMais Reminder</title>
-  <link rel="stylesheet" type="text/css" href="styles.css">
+  <link rel="stylesheet" type="text/css" href="../styles/popup.css">
 </head>
 <body>
   <div class="container">
@@ -44,21 +44,18 @@
       </section>
       <div id="content">
         <div id="workday" class="tab-content">
-          <button id="fetchJourneyDataButton" class="btn">Buscar Dados de Jornada</button>
           <div id="dataContainer"></div>
         </div>
         <div id="settings" class="tab-content" style="display: none;">
-          <!-- Conteúdo da Configuração -->
-          <button id="fetchDataButton" class="btn">Buscar Dados de Sessão</button>
           <div id="sessionDataContainer"></div>
         </div>
       </div>
     </div>
-    <div id="message"></div>
+    <div id="message" class="message"></div>
   </div>
-  <script src="libs/dayjs.min.js"></script>
-  <script src="libs/plugin/utc.js"></script>
-  <script src="libs/plugin/timezone.js"></script>
-  <script src="popup.js"></script>
+  <script type="module" src="../libs/dayjs.min.js"></script>
+  <script type="module" src="../libs/plugin/utc.js"></script>
+  <script type="module" src="../libs/plugin/timezone.js"></script>
+  <script type="module" src="../scripts/popup/popup.js"></script>
 </body>
 </html>
